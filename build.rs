@@ -193,12 +193,12 @@ fn build(metadata: &Metadata) {
         .unwrap_or_else(|e| panic!("nmake prep failed: {}", e));
 
     // Build.
-    nmake(&[])
+    nmake(&["/I"])
         .run()
         .unwrap_or_else(|e| panic!("nmake build failed: {}", e));
 
     // Install.
-    nmake(&["install"])
+    nmake(&["/I install"])
         .run()
         .unwrap_or_else(|e| panic!("nmake install failed: {}", e));
 }
