@@ -20,6 +20,9 @@ openssl-sys = { version = "0.9.55", optional = true }
 [build-dependencies]
 duct = "0.13.3"
 
+[target.'cfg(windows)'.build-dependencies]
+cc = "1"
+
 [features]
 binaries = []
 nls = []

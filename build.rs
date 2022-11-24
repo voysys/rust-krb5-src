@@ -147,6 +147,20 @@ fn build(metadata: &Metadata) {
         panic!("cross-compilation on a Windows host is not supported");
     }
 
+    let target = if let Ok(target) = env::var("TARGET") {
+        target
+    } else {
+        panic!("Unable to find env variable TARGET");
+    };
+
+    let tool = if let Some(tool) = cc::windows_registry::find_tool(&target, "nmake.exe") {
+        tool
+    } else {
+        panic!(
+            "Unable to find nmake.exe, have you installed the visual studio build tools for c++?"
+        );
+    };
+
     // The Windows build system doesn't seem to support out-of-tree builds, so
     // copy the source tree into the build directory since we're not allowed to
     // build in the checkout directly.
@@ -160,9 +174,17 @@ fn build(metadata: &Metadata) {
     }
 
     let nmake = |args: &[&str]| {
-        cmd("nmake", args)
+        let mut cmd = cmd(tool.path(), args)
             .dir(&metadata.build_dir)
             .env("KRB_INSTALL_DIR", &metadata.install_dir)
+            .env("NODEBUG", "1")
+            .env("NO_LEASH", "1");
+
+        for (key, value) in tool.env() {
+            cmd = cmd.env(key.to_str().unwrap(), value.to_str().unwrap())
+        }
+
+        cmd
     };
 
     // Prepare Windows Makefile.
